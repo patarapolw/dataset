@@ -25,6 +25,8 @@ log = logging.getLogger(__name__)
 class Database(object):
     """A database object represents a SQL database with multiple tables."""
 
+    table_class = Table
+
     def __init__(self, url, schema=None, reflect_metadata=True,
                  engine_kwargs=None, reflect_views=True,
                  ensure_schema=True, row_type=row_type):
@@ -181,10 +183,10 @@ class Database(object):
         table_name = normalize_table_name(table_name)
         with self.lock:
             if table_name not in self._tables:
-                self._tables[table_name] = Table(self, table_name,
-                                                 primary_id=primary_id,
-                                                 primary_type=primary_type,
-                                                 auto_create=True)
+                self._tables[table_name] = self.table_class(self, table_name,
+                                                            primary_id=primary_id,
+                                                            primary_type=primary_type,
+                                                            auto_create=True)
             return self._tables.get(table_name)
 
     def load_table(self, table_name):
@@ -202,7 +204,7 @@ class Database(object):
         table_name = normalize_table_name(table_name)
         with self.lock:
             if table_name not in self._tables:
-                self._tables[table_name] = Table(self, table_name)
+                self._tables[table_name] = self.table_class(self, table_name)
             return self._tables.get(table_name)
 
     def get_table(self, table_name, primary_id=None, primary_type=None):
